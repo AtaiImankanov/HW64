@@ -8,8 +8,10 @@ namespace LabInsta.Controllers
 {
     public class AccountController : Controller
     {
+
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private string[] roles = new[] { "company", "worker" };
         public AccountController(UserManager<User> userManager, SignInManager<User> signInManager)
 
         {
@@ -17,10 +19,9 @@ namespace LabInsta.Controllers
             _userManager = userManager;
 
             _signInManager = signInManager;
-
         }
 
-        
+
         [HttpGet]
 
         public IActionResult Register()
@@ -50,7 +51,10 @@ namespace LabInsta.Controllers
                     Avatar = model.Avatar,
                     Role = model.Role
                 };
-
+                if (user.Avatar == null)
+                {
+                    user.Avatar = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Anonymous_emblem.svg/640px-Anonymous_emblem.svg.png";
+                }
                 var result = await _userManager.CreateAsync(user, model.Password);
                 
 
@@ -63,7 +67,7 @@ namespace LabInsta.Controllers
                 {
                     if (user.Role == "Company")
                     {
-                        await _userManager.AddToRoleAsync(user, "company");
+                        await _userManager.AddToRoleAsync(user,"company");
                     }
                     else
                     {
@@ -104,7 +108,7 @@ namespace LabInsta.Controllers
             if (ModelState.IsValid)
 
             {
-
+                var users = _userManager.Users;
                 User user = await _userManager.FindByEmailAsync(model.Email);
 
                 Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(
@@ -160,5 +164,39 @@ namespace LabInsta.Controllers
             return RedirectToAction("Index", "Home");
 
         }
+        public bool EmailValid(string email)
+        {
+            foreach (var e in _userManager.Users)
+            {
+                if (e.Email == email)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool NameValid(string name)
+        {
+            foreach (var e in _userManager.Users)
+            {
+                if (e.UserName == name)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool PhoneNumberValid(string name)
+        {
+            foreach (var e in _userManager.Users)
+            {
+                if (e.PhoneNumber == name)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+       
     }
 }
